@@ -1,0 +1,44 @@
+name: Sideline cron
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: sideline-cron-${{ github.event.schedule }}
+  cancel-in-progress: false
+
+jobs:
+  cascade-tick:
+    if: github.event.schedule == '*/5 * * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Hit /api/cron/cascade-tick
+        run: |
+          set -e
+          STATUS=$(curl -sS -o /tmp/out.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://sideline-ivory.vercel.app/api/cron/cascade-tick)
+          echo "HTTP $STATUS"
+          cat /tmp/out.json | head -c 500
+          echo
+          [ "$STATUS" = "200" ]
+
+  send-reminders:
+    if: github.event.schedule == '0 * * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Hit /api/cron/send-reminders
+        run: |
+          set -e
+          STATUS=$(curl -sS -o /tmp/out.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://sideline-ivory.vercel.app/api/cron/send-reminders)
+          echo "HTTP $STATUS"
+          cat /tmp/out.json | head -c 500
+          echo
+          [ "$STATUS" = "200" ]
