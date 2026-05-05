@@ -70,7 +70,12 @@ export function parseQuoWebhook(payload: unknown): QuoInbound {
   if (!p) throw new Error('quo: empty webhook payload');
 
   // OpenPhone v3+ wraps the message under data.object; older wraps under data.
-  const inner = p.data?.object ?? p.data ?? p;
+  const inner = (p.data?.object ?? p.data ?? p) as {
+    from?: string;
+    text?: string;
+    body?: string;
+    createdAt?: string;
+  };
   const fromPhone = inner.from ?? '';
   const text = inner.text ?? inner.body ?? '';
   const ts = inner.createdAt ?? p.createdAt ?? new Date().toISOString();
@@ -101,7 +106,7 @@ export async function verifyQuoSignature(
   const keyBytes = base64Decode(secret);
   const key = await crypto.subtle.importKey(
     'raw',
-    keyBytes,
+    keyBytes.buffer.slice(keyBytes.byteOffset, keyBytes.byteOffset + keyBytes.byteLength) as ArrayBuffer,
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign'],
