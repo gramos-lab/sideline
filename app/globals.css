@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --club-accent: #1E40AF;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html, body {
+  background: #FAFAF9;
+  color: #18181B;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font-family: inherit; }
+
+.tabular { font-variant-numeric: tabular-nums; }
+.font-mono-num { font-family: var(--font-jbm), ui-monospace, 'SF Mono', monospace; font-variant-numeric: tabular-nums; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #D4D2CC; border-radius: 999px; border: 2px solid #FAFAF9; }
+::-webkit-scrollbar-track { background: transparent; }
+
+.sl-nav-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid #E8E6E1;
+  background: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 120ms;
+}
+.sl-nav-btn:hover { background: #F4F4F1; }
+
+/* hairline used by toolbar text-link separators */
+.sl-sep::before {
+  content: '·';
+  color: #D4D2CC;
+  margin: 0 8px;
+}
+.sl-sep:first-child::before { content: ''; margin: 0; }
