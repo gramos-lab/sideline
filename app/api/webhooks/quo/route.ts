@@ -9,7 +9,8 @@ export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   const raw = await req.text();
-  const signature = req.headers.get('x-quo-signature');
+  const signature =
+    req.headers.get('openphone-signature') ?? req.headers.get('x-quo-signature');
   const ok = await verifyQuoSignature(raw, signature);
   if (!ok) return NextResponse.json({ error: 'bad signature' }, { status: 401 });
 
