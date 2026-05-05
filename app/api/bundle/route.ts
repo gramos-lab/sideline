@@ -25,8 +25,7 @@ export async function GET(req: Request) {
   const { data: clubsRaw, error } = await db
     .from('clubs')
     .select('*')
-    .eq('active', true)
-    .order('name');
+    .eq('active', true);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const allClubs = (clubsRaw ?? []) as Club[];
