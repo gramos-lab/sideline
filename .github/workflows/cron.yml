@@ -9,9 +9,11 @@ name: Sideline cron
 
 on:
   schedule:
-    - cron: '*/5 * * * *'   # cascade-tick: every 5 minutes
-    - cron: '0 * * * *'     # send-reminders: hourly
-    - cron: '15 * * * *'    # notify-new: hourly, offset 15min
+    - cron: '*/5 * * * *'   # cascade-tick: every 5 minutes (callout cascades only)
+    # Auto reminder + first-ping crons disabled — manual control.
+    # Reactivate by uncommenting these schedules when ready:
+    # - cron: '0 * * * *'   # send-reminders: hourly
+    # - cron: '15 * * * *'  # notify-new: hourly, offset 15min
   workflow_dispatch:        # allow manual run from the Actions tab
 
 concurrency:
@@ -36,7 +38,7 @@ jobs:
           [ "$STATUS" = "200" ]
 
   send-reminders:
-    if: github.event.schedule == '0 * * * *' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -52,7 +54,7 @@ jobs:
           [ "$STATUS" = "200" ]
 
   notify-new:
-    if: github.event.schedule == '15 * * * *' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
