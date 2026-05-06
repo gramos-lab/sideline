@@ -1,10 +1,18 @@
 name: Sideline cron
 
+# Notes:
+# - GitHub Actions cron minimum interval is 5 minutes; runs may be delayed
+#   during high-load periods. For sub-minute precision, use cron-job.org.
+# - Endpoints require Authorization: Bearer ${CRON_SECRET}.
+# - Endpoints return JSON; we just need the workflow to exit non-zero on
+#   non-2xx responses so failures are visible in the Actions tab.
+
 on:
   schedule:
-    - cron: '*/5 * * * *'
-    - cron: '0 * * * *'
-  workflow_dispatch:
+    - cron: '*/5 * * * *'   # cascade-tick: every 5 minutes
+    - cron: '0 * * * *'     # send-reminders: hourly
+    - cron: '15 * * * *'    # notify-new: hourly, offset 15min
+  workflow_dispatch:        # allow manual run from the Actions tab
 
 concurrency:
   group: sideline-cron-${{ github.event.schedule }}
@@ -38,6 +46,22 @@ jobs:
           STATUS=$(curl -sS -o /tmp/out.json -w "%{http_code}" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             https://sideline-ivory.vercel.app/api/cron/send-reminders)
+          echo "HTTP $STATUS"
+          cat /tmp/out.json | head -c 500
+          echo
+          [ "$STATUS" = "200" ]
+
+  notify-new:
+    if: github.event.schedule == '15 * * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Hit /api/cron/notify-new
+        run: |
+          set -e
+          STATUS=$(curl -sS -o /tmp/out.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://sideline-ivory.vercel.app/api/cron/notify-new)
           echo "HTTP $STATUS"
           cat /tmp/out.json | head -c 500
           echo
